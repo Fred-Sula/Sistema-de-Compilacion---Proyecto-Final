@@ -18,7 +18,7 @@ public class IDE extends JFrame {
 
     public IDE() {
         initComponents();
-        setTitle("Prueba IDE - Compilador");
+        setTitle("Sistema de Compilación - Proyecto Final");
         setSize(900, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
