@@ -3,13 +3,19 @@ package compilador;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.text.*;
+
+import com.proyecto.compilador.ArchivoHTML;
 
 public class IDE extends JFrame {
 
     // --area de declaracion de botones---
     private JButton btnNuevo, btnGuardar, btnAbrir;
-    private JButton btnReserved, btnIdentifiers, btnTokens, btnCompilar;
+    private JButton btnReserved, btnIdentifiers, btnTokens, btnCompilar, btnHtml;
 
     // ----areas generales del programa---
     private JTextArea areaCodigo;
@@ -67,6 +73,7 @@ areaConsola.setCaretColor(Color.BLACK);
         btnIdentifiers = new JButton(icon("/iconos/ident.png"));
         btnTokens = new JButton(icon("/iconos/tokens.png"));
         btnCompilar = new JButton(icon("/iconos/compilar.png"));
+        btnHtml = new JButton(icon("/iconos/html.png"));
 
         // ----area de acciones que realiza los botones---
         btnNuevo.addActionListener(e -> nuevoArchivo());
@@ -78,10 +85,11 @@ areaConsola.setCaretColor(Color.BLACK);
         btnTokens.addActionListener(e -> mostrarTokens());
         btnReserved.addActionListener(e -> mostrarReservadas());
         btnIdentifiers.addActionListener(e -> mostrarIdentificadores());
+        btnHtml.addActionListener(e -> html());
 
         JButton[] botones = {
             btnNuevo, btnGuardar, btnAbrir,
-            btnReserved, btnIdentifiers, btnTokens, btnCompilar
+            btnReserved, btnIdentifiers, btnTokens, btnCompilar, btnHtml
         };
 
         for (JButton b : botones) {
@@ -101,6 +109,7 @@ areaConsola.setCaretColor(Color.BLACK);
         toolBar.add(btnTokens);
         toolBar.addSeparator();
         toolBar.add(btnCompilar);
+        toolBar.add(btnHtml);
 
         add(toolBar, BorderLayout.NORTH);
     }
@@ -370,5 +379,37 @@ private boolean faltanPuntoComa(String codigo) {
     }
     return false;
 }
+
+	private void html() {
+		ArchivoHTML archivoHTML = new ArchivoHTML();
+		
+		java.util.List<String> columnas = new ArrayList<>();
+		columnas.add("NOMBRE1");
+		columnas.add("NOMBRE2");
+		columnas.add("NOMBRE3");
+		
+		java.util.List<Map<String, Object>> filas = new ArrayList<>();
+
+		Map<String, Object> fila1 = new HashMap<>();
+		fila1.put("NOMBRE1", "int");
+		fila1.put("NOMBRE2", "PALABRA_RESERVADA");
+		fila1.put("NOMBRE3", 1);
+
+		Map<String, Object> fila2 = new HashMap<>();
+		fila2.put("NOMBRE1", "x");
+		fila2.put("NOMBRE2", "IDENTIFICADOR");
+		fila2.put("NOMBRE3", 1);
+
+		filas.add(fila1);
+		filas.add(fila2);
+		
+		Map<String, Object> datos = new HashMap<>();
+		
+		datos.put("titulo", "Errores");
+		datos.put("columnas", columnas);
+		datos.put("filas", filas);
+		
+		archivoHTML.generar("errores", datos);
+	}
     
 }
