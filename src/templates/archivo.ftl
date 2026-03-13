@@ -23,12 +23,12 @@
 	</thead>
 	<tbody>
 		<#list filas as fila>
-            <tr>
-                <#list columnas as col>
-                    <td>${fila[col]!""}</td>
-                </#list>
-            </tr>
-        </#list>
+	        <tr>
+	            <td>${fila.dato}</td>
+	            <td>${fila.tipo}</td>
+	            <td>${fila.linea}</td>
+	        </tr>
+	    </#list>
   	</tbody>
 </table>
 

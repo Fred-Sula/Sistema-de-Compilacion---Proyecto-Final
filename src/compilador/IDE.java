@@ -10,12 +10,13 @@ import java.util.Map;
 import javax.swing.text.*;
 
 import com.proyecto.compilador.ArchivoHTML;
+import com.proyecto.compilador.Tokens;
 
 public class IDE extends JFrame {
 
     // --area de declaracion de botones---
     private JButton btnNuevo, btnGuardar, btnAbrir;
-    private JButton btnReserved, btnIdentifiers, btnTokens, btnCompilar, btnHtml;
+    private JButton btnReserved, btnIdentifiers, btnTokens, btnHtmlTokens, btnCompilar, btnHtml;
 
     // ----areas generales del programa---
     private JTextArea areaCodigo;
@@ -32,7 +33,7 @@ public class IDE extends JFrame {
 
     private void initComponents() {
 
-        setLayout(new BorderLayout());
+        getContentPane().setLayout(new BorderLayout());
 
         // -- area de edicion de la consola---
         areaCodigo = new JTextArea();
@@ -45,7 +46,7 @@ public class IDE extends JFrame {
 
         JScrollPane scroll = new JScrollPane(areaCodigo);
         scroll.setRowHeaderView(areaLineas);
-        add(scroll, BorderLayout.CENTER);
+        getContentPane().add(scroll, BorderLayout.CENTER);
 
         areaCodigo.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarLineas(); }
@@ -59,7 +60,7 @@ public class IDE extends JFrame {
         areaConsola.setBackground(Color.BLACK);
         areaConsola.setForeground(Color.GREEN);
         areaConsola.setFont(new Font("Consolas", Font.PLAIN, 12));
-        add(new JScrollPane(areaConsola), BorderLayout.SOUTH);
+        getContentPane().add(new JScrollPane(areaConsola), BorderLayout.SOUTH);
         
         areaConsola.setBackground(new Color(245, 245, 245));
 areaConsola.setForeground(Color.DARK_GRAY);
@@ -72,6 +73,8 @@ areaConsola.setCaretColor(Color.BLACK);
         btnReserved = new JButton(icon("/iconos/reservadas.png"));
         btnIdentifiers = new JButton(icon("/iconos/ident.png"));
         btnTokens = new JButton(icon("/iconos/tokens.png"));
+        btnHtmlTokens = new JButton(icono("/iconos/html_token.png", 32, 32));
+        btnHtmlTokens.setToolTipText("Bitácora de Tokens");
         btnCompilar = new JButton(icon("/iconos/compilar.png"));
         btnHtml = new JButton(icon("/iconos/html.png"));
 
@@ -83,13 +86,14 @@ areaConsola.setCaretColor(Color.BLACK);
         btnGuardar.addActionListener(e -> guardarEnEscritorioPrueba());
         btnAbrir.addActionListener(e -> abrirPruebaTxt());
         btnTokens.addActionListener(e -> mostrarTokens());
+        btnHtmlTokens.addActionListener(e -> htmlTokens());
         btnReserved.addActionListener(e -> mostrarReservadas());
         btnIdentifiers.addActionListener(e -> mostrarIdentificadores());
         btnHtml.addActionListener(e -> html());
 
         JButton[] botones = {
             btnNuevo, btnGuardar, btnAbrir,
-            btnReserved, btnIdentifiers, btnTokens, btnCompilar, btnHtml
+            btnReserved, btnIdentifiers, btnTokens, btnHtmlTokens, btnCompilar, btnHtml
         };
 
         for (JButton b : botones) {
@@ -107,11 +111,12 @@ areaConsola.setCaretColor(Color.BLACK);
         toolBar.add(btnReserved);
         toolBar.add(btnIdentifiers);
         toolBar.add(btnTokens);
+        toolBar.add(btnHtmlTokens);
         toolBar.addSeparator();
         toolBar.add(btnCompilar);
         toolBar.add(btnHtml);
 
-        add(toolBar, BorderLayout.NORTH);
+        getContentPane().add(toolBar, BorderLayout.NORTH);
     }
 
     // ----area de los metodos que utilizara el programa--
@@ -331,18 +336,23 @@ areaConsola.setCaretColor(Color.BLACK);
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new IDE().setVisible(true));
-    }private void mostrarTokens() {
-    areaConsola.setText("");
-    analizarTokens(areaCodigo.getText(), "TODO");
-}
-    private void mostrarReservadas() {
-    areaConsola.setText("");
-    analizarTokens(areaCodigo.getText(), "RESERVADAS");
-}
-    private void mostrarIdentificadores() {
-    areaConsola.setText("");
-    analizarTokens(areaCodigo.getText(), "IDENTIFICADORES");
-}
+    }
+    
+	private void mostrarTokens() {
+		areaConsola.setText("");
+		analizarTokens(areaCodigo.getText(), "TODO");
+	}
+
+	private void mostrarReservadas() {
+		areaConsola.setText("");
+		analizarTokens(areaCodigo.getText(), "RESERVADAS");
+	}
+
+	private void mostrarIdentificadores() {
+		areaConsola.setText("");
+		analizarTokens(areaCodigo.getText(), "IDENTIFICADORES");
+	}
+	
     private boolean parentesisBalanceados(String codigo) {
     int contador = 0;
     for (char c : codigo.toCharArray()) {
@@ -411,5 +421,16 @@ private boolean faltanPuntoComa(String codigo) {
 		
 		archivoHTML.generar("errores", datos);
 	}
+	
+	private void htmlTokens() {
+		Tokens token = new Tokens();
+		token.analizar(areaCodigo);
+	}
     
+	// UTILIDADES
+	public ImageIcon icono(String path, int w, int h) {
+	    ImageIcon icon = new ImageIcon(getClass().getResource(path));
+	    Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+	    return new ImageIcon(img);
+	}
 }
