@@ -3,11 +3,16 @@ package compilador;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.ArrayList;import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.awt.event.ActionEvent;
 import javax.swing.text.*;
+import java.util.Locale;
+
 
 import com.proyecto.compilador.ArchivoHTML;
 import com.proyecto.compilador.Tokens;
@@ -24,7 +29,9 @@ public class IDE extends JFrame {
     private JTextArea areaConsola;
 
     public IDE() {
+        Locale.setDefault(new Locale("es", "ES"));
         initComponents();
+        configurarAtajos();
         setTitle("Sistema de Compilación - Proyecto Final");
         setSize(900, 600);
         setLocationRelativeTo(null);
@@ -53,6 +60,7 @@ public class IDE extends JFrame {
             public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarLineas(); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarLineas(); }
         });
+        
 
         // --area de consola donde se mostrara el resultado---
         areaConsola = new JTextArea(6, 20);
@@ -83,8 +91,8 @@ areaConsola.setCaretColor(Color.BLACK);
         //btnAbrir.addActionListener(e -> abrirArchivo());
        // btnGuardar.addActionListener(e -> guardarArchivo());
         btnCompilar.addActionListener(e -> compilar());
-        btnGuardar.addActionListener(e -> guardarEnEscritorioPrueba());
-        btnAbrir.addActionListener(e -> abrirPruebaTxt());
+        btnGuardar.addActionListener(e -> guardarArchivo());
+        btnAbrir.addActionListener(e -> abrirArchivo());
         btnTokens.addActionListener(e -> mostrarTokens());
         btnHtmlTokens.addActionListener(e -> htmlTokens());
         btnReserved.addActionListener(e -> mostrarReservadas());
@@ -118,6 +126,7 @@ areaConsola.setCaretColor(Color.BLACK);
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
     }
+    
 
     // ----area de los metodos que utilizara el programa--
 
@@ -135,26 +144,60 @@ areaConsola.setCaretColor(Color.BLACK);
     }
 
     private void abrirArchivo() {
-        JFileChooser chooser = new JFileChooser();
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (BufferedReader br = new BufferedReader(new FileReader(chooser.getSelectedFile()))) {
-                areaCodigo.read(br, null);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error al abrir archivo");
+
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Seleccionar archivo para abrir");
+
+    int seleccion = fileChooser.showDialog(this, "Abrir");
+
+    if (seleccion == JFileChooser.APPROVE_OPTION) {
+
+        File archivo = fileChooser.getSelectedFile();
+
+        try {
+            BufferedReader lector = new BufferedReader(new FileReader(archivo));
+            String linea;
+            String contenido = "";
+
+            while ((linea = lector.readLine()) != null) {
+                contenido += linea + "\n";
             }
+
+            lector.close();
+
+            areaCodigo.setText(contenido);
+            areaConsola.append("Archivo abierto correctamente\n");
+
+        } catch (IOException e) {
+            areaConsola.append("Error al abrir archivo\n");
+        }
+    }
+}
+
+   private void guardarArchivo() {
+
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Guardar archivo");
+
+    int seleccion = fileChooser.showDialog(this, "Guardar");
+
+    if (seleccion == JFileChooser.APPROVE_OPTION) {
+
+        File archivo = fileChooser.getSelectedFile();
+
+        try {
+            FileWriter writer = new FileWriter(archivo);
+            writer.write(areaCodigo.getText());
+            writer.close();
+
+            areaConsola.append("Archivo guardado correctamente\n");
+
+        } catch (IOException e) {
+            areaConsola.append("Error al guardar archivo\n");
         }
     }
 
-    private void guardarArchivo() {
-        JFileChooser chooser = new JFileChooser();
-        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(chooser.getSelectedFile()))) {
-                areaCodigo.write(bw);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error al guardar archivo");
-            }
-        }
-    }
+}
     private void limpiarResaltado() {
     areaCodigo.getHighlighter().removeAllHighlights();
 }
@@ -254,11 +297,25 @@ areaConsola.setCaretColor(Color.BLACK);
     areaConsola.append("Compilación exitosa");
 }
 
-   private void analizarTokens(String codigo, String modo) {
+  private void analizarTokens(String codigo, String modo) {
 
     String[] palabrasReservadas = {
         "int", "float", "if", "else", "while", "for", "return"
     };
+
+    // separar símbolos
+    codigo = codigo.replace("(", " ( ");
+    codigo = codigo.replace(")", " ) ");
+    codigo = codigo.replace("{", " { ");
+    codigo = codigo.replace("}", " } ");
+    codigo = codigo.replace(";", " ; ");
+    codigo = codigo.replace("+", " + ");
+    codigo = codigo.replace("-", " - ");
+    codigo = codigo.replace("*", " * ");
+    codigo = codigo.replace("/", " / ");
+    codigo = codigo.replace("=", " = ");
+    codigo = codigo.replace("<", " < ");
+    codigo = codigo.replace(">", " > ");
 
     String[] tokens = codigo.split("\\s+");
 
@@ -276,15 +333,16 @@ areaConsola.setCaretColor(Color.BLACK);
         }
         else if (token.matches("\\d+")) {
             if (modo.equals("TODO")) {
-                areaConsola.append(token + " → NuMERO\n");
+                areaConsola.append(token + " → NUMERO\n");
             }
         }
         else {
             if (modo.equals("TODO")) {
-                areaConsola.append(token + " → SlMBOLO\n");
+                areaConsola.append(token + " → SIMBOLO\n");
             }
         }
     }
+
 }
     
     private void guardarEnEscritorioPrueba() {
@@ -433,4 +491,37 @@ private boolean faltanPuntoComa(String codigo) {
 	    Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
 	    return new ImageIcon(img);
 	}
+        private void configurarAtajos() {
+
+    // CTRL + S  (Guardar)
+    KeyStroke ctrlS = KeyStroke.getKeyStroke("control S");
+    areaCodigo.getInputMap().put(ctrlS, "guardar");
+    areaCodigo.getActionMap().put("guardar", new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            guardarArchivo();
+        }
+    });
+
+    // CTRL + O (Abrir)
+    KeyStroke ctrlO = KeyStroke.getKeyStroke("control O");
+    areaCodigo.getInputMap().put(ctrlO, "abrir");
+    areaCodigo.getActionMap().put("abrir", new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            abrirArchivo();
+        }
+    });
+
+    // CTRL + N (Nuevo)
+    KeyStroke ctrlN = KeyStroke.getKeyStroke("control N");
+    areaCodigo.getInputMap().put(ctrlN, "nuevo");
+    areaCodigo.getActionMap().put("nuevo", new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            areaCodigo.setText("");
+            areaConsola.setText("");
+        }
+    });
+}
 }
