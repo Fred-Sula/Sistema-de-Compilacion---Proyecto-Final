@@ -15,11 +15,17 @@ import com.proyecto.compilador.utilidad.Fila;
 public class Tokens {
 	
 	private static final Pattern TOKEN_PATRON = Pattern.compile(
-	        "[a-zA-Z][a-zA-Z0-9]*" +   // identificadores
-	        "|-?\\d+(\\.\\d+)?" +      // números
-	        "|==|!=|<=|>=|=" +         // operadores dobles o simples
-	        "|[+\\-*/;(){}\"\']"           // símbolos
+			"\\+\\+|--|&&|\\|\\||==|!=|<=|>=" +
+			"|[+\\-*/=<>]" +
+			"|[(){};]" +
+			"|\"[^\"]*\"" +
+			"|-?\\d+(\\.\\d+)?" +
+			"|[a-zA-Z][a-zA-Z0-9]*"
 	);
+	
+	private static final Pattern IDENTIFICADOR = Pattern.compile("[a-zA-Z][a-zA-Z0-9]*");
+
+	private static final Pattern NUMERO = Pattern.compile("-?\\d+(\\.\\d+)?");
 
 	private static final Set<String> PALABRAS_RESERVADAS = Set.of(
 			"entero", "flotante", "doble", "largo",
@@ -28,15 +34,44 @@ public class Tokens {
 			"vacio", "mostrar", "retornar"
 	);
 	
+	private static final Set<String> OPERADOR_ARITMETICO = Set.of(
+			"++", "--", "+", "-", "*", "/"		
+	);
+	
+	private static final Set<String> OPERADOR_LOGICO = Set.of(
+			"&&", "||"	
+	);
+	
+	private static final Set<String> OPERADOR_RELACIONAL = Set.of(
+			"==", "!=", "<=", ">=", "<", ">"
+	);
+	
+	private static final Set<String> OPERADOR_ASIGNACION = Set.of(
+			"="		
+	);
+	
 	private static final Set<String> SIMBOLOS = Set.of(
-			"+", "-", "*", "/", "=", "==", "(", ")", "{", "}", "\"", "\'", ";"		
-	);	
+			"!", "@", "#", "$", "%", "&", "(", ")", "{", "}", "\"", "\'", ";"		
+	);
 	
-	private static final Pattern IDENTIFICADOR = Pattern.compile("[a-zA-Z][a-zA-Z0-9]*");
+	public List<Fila> analizar(JTextArea jtaCodigo) {
+	    List<Fila> filas = new ArrayList<>();
 
-	private static final Pattern NUMERO = Pattern.compile("-?\\d+(\\.\\d+)?");
+	    String[] lineas = jtaCodigo.getText().split("\n");
+
+	    for (int i = 0; i < lineas.length; i++) {
+	        Matcher matcher = TOKEN_PATRON.matcher(lineas[i]);
+
+	        while (matcher.find()) {
+	            String token = matcher.group();
+	            filas.add(new Fila(token, tipoToken(token), i + 1));
+	        }
+	    }
+	    
+	    return filas;
+	}
 	
-	public void analizar(JTextArea jtaCodigo) {
+	public void generarHTML(JTextArea jtaCodigo) {
 		ArchivoHTML archivoHTML = new ArchivoHTML();
 
 	    List<String> columnas = List.of("Token", "Tipo", "Línea");
@@ -45,11 +80,9 @@ public class Tokens {
 	    String[] lineas = jtaCodigo.getText().split("\n");
 
 	    for (int i = 0; i < lineas.length; i++) {
-
 	        Matcher matcher = TOKEN_PATRON.matcher(lineas[i]);
 
 	        while (matcher.find()) {
-
 	            String token = matcher.group();
 	            filas.add(new Fila(token, tipoToken(token), i + 1));
 	        }
@@ -63,20 +96,31 @@ public class Tokens {
 	    archivoHTML.generar("bitacora_tokens", datos);
 	}
 	
-	private String tipoToken(String token) {
-
-	    if (PALABRAS_RESERVADAS.contains(token))
-	        return "PALABRA_RESERVADA";
-
-	    if (SIMBOLOS.contains(token))
-	        return "SIMBOLO";
-
-	    if (NUMERO.matcher(token).matches())
+	private String tipoToken(String token) {		
+	    if(PALABRAS_RESERVADAS.contains(token))
+	        return "PALABRA RESERVADA";
+	    
+	    if(OPERADOR_ARITMETICO.contains(token))
+	    	return "OPERADOR ARITMETICO";
+	    
+	    if(OPERADOR_LOGICO.contains(token))
+	    	return "OPERADOR LOGICO";
+	    
+	    if(OPERADOR_RELACIONAL.contains(token))
+	    	return "OPERADOR RELACIONAL";
+	    
+	    if(OPERADOR_ASIGNACION.contains(token))
+	    	return "OPERADOR ASIGNACION";
+	    
+	    if(NUMERO.matcher(token).matches())
 	        return "NUMERO";
 
-	    if (IDENTIFICADOR.matcher(token).matches())
+	    if(IDENTIFICADOR.matcher(token).matches())
 	        return "IDENTIFICADOR";
 
-	    return "SIMBOLO_NO_VALIDO";
+	    if(SIMBOLOS.contains(token))
+	        return "SIMBOLO";
+
+	    return "SIMBOLO NO VALIDO";
 	}
 }
