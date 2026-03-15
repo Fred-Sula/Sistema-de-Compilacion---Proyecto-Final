@@ -15,6 +15,7 @@ import javax.swing.text.*;
 import java.util.Locale;
 
 import com.proyecto.compilador.ArchivoHTML;
+import com.proyecto.compilador.TablaSimbolos;
 import com.proyecto.compilador.Tokens;
 import com.proyecto.compilador.utilidad.Fila;
 
@@ -120,7 +121,7 @@ public class IDE extends JFrame {
 		btnReserved.addActionListener(e -> mostrarReservadas());
 		btnIdentifiers.addActionListener(e -> mostrarIdentificadores());
 		btnHtmlTokens.addActionListener(e -> htmlTokens());
-		btnHtml.addActionListener(e -> html());
+		 btnHtml.addActionListener(e -> generarTablaSimbolos());
 
 		JButton[] botones = { btnNuevo, btnGuardar, btnAbrir, btnReserved, btnIdentifiers, btnAnalizarTokens,
 				btnCompilar, btnHtmlTokens, btnHtml };
@@ -521,6 +522,67 @@ public class IDE extends JFrame {
 	private void htmlTokens() {
 		tokens.generarHTML(areaCodigo);
 	}
+        
+        
+        
+        private void generarTablaSimbolos() {
+
+    try {
+
+        TablaSimbolos tabla = new TablaSimbolos();
+
+        String codigo = areaCodigo.getText();
+
+        String[] lineas = codigo.split("\n");
+
+        java.util.List<Map<String, Object>> simbolos = new ArrayList<>();
+
+        String tipoActual = "";
+
+        for (int i = 0; i < lineas.length; i++) {
+
+            String linea = lineas[i].trim();
+
+            int numeroLinea = i + 1;
+
+            if (linea.startsWith("entero ")) {
+                tipoActual = "entero";
+            }
+
+            if (linea.startsWith("flotante ")) {
+                tipoActual = "flotante";
+            }
+
+            String[] tokens = linea.split("\\s+|;|=");
+
+            for (String token : tokens) {
+
+                if (token.matches("[a-zA-Z][a-zA-Z0-9]*")) {
+
+                    if (!token.equals("entero") && !token.equals("flotante")) {
+
+                        Map<String, Object> fila = new HashMap<>();
+
+                        fila.put("IDENTIFICADOR", token);
+                        fila.put("TIPO", tipoActual);
+                        fila.put("LINEA", numeroLinea);
+
+                        simbolos.add(fila);
+                    }
+                }
+            }
+        }
+
+        tabla.generarHTML(simbolos);
+
+        areaConsola.append("Tabla de simbolos generada\n");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+        
+        
 
 	// UTILIDADES
 	public ImageIcon icono(String path, int w, int h) {
