@@ -71,19 +71,26 @@ public class IDE extends JFrame {
         getContentPane().add(new JScrollPane(areaConsola), BorderLayout.SOUTH);
         
         areaConsola.setBackground(new Color(245, 245, 245));
-areaConsola.setForeground(Color.DARK_GRAY);
-areaConsola.setCaretColor(Color.BLACK);
+        areaConsola.setForeground(Color.DARK_GRAY);
+        areaConsola.setCaretColor(Color.BLACK);
 
         // -----area de botonos---
         btnNuevo = new JButton(icon("/iconos/nuevo.png"));
+        btnNuevo.setToolTipText("Nuevo archivo (Ctrl+N)");
         btnGuardar = new JButton(icon("/iconos/guardar.png"));
+        btnGuardar.setToolTipText("Guardar archivo (Ctrl+S)");
         btnAbrir = new JButton(icon("/iconos/abrir.png"));
+        btnAbrir.setToolTipText("Abrir archivo (Ctrl+O)");
         btnReserved = new JButton(icon("/iconos/reservadas.png"));
+        btnReserved.setToolTipText("Mostrar palabras reservadas");
         btnIdentifiers = new JButton(icon("/iconos/ident.png"));
+        btnIdentifiers.setToolTipText("Mostrar identificadores");
         btnTokens = new JButton(icon("/iconos/tokens.png"));
+        btnTokens.setToolTipText("Mostrar todos los tokens");
         btnHtmlTokens = new JButton(icono("/iconos/html_token.png", 32, 32));
         btnHtmlTokens.setToolTipText("Bitácora de Tokens");
         btnCompilar = new JButton(icon("/iconos/compilar.png"));
+        btnCompilar.setToolTipText("Compilar código");
         btnHtml = new JButton(icon("/iconos/html.png"));
 
         // ----area de acciones que realiza los botones---
