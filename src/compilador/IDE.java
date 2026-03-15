@@ -17,8 +17,13 @@ import java.util.Locale;
 import com.proyecto.compilador.ArchivoHTML;
 import com.proyecto.compilador.Tokens;
 import com.proyecto.compilador.utilidad.Fila;
+import com.proyecto.compilador.AnalizadorLexico;
+import com.proyecto.compilador.AnalizadorSintactico;
+import com.proyecto.compilador.ArchivoHtmlBitacora;
 
 public class IDE extends JFrame {
+    AnalizadorLexico lexico;
+AnalizadorSintactico sintactico;
 
 	/**
 	 * 
@@ -28,7 +33,8 @@ public class IDE extends JFrame {
 	// --area de declaracion de botones---
 	private JButton btnNuevo, btnGuardar, btnAbrir;
 	private JButton btnReserved, btnIdentifiers, btnAnalizarTokens, btnHtmlTokens, btnCompilar, btnHtml;
-
+        JButton btnBitacora = new JButton("Bitácora");
+        
 	// ----areas generales del programa---
 	private JTextArea areaCodigo;
 	private JTextArea areaLineas;
@@ -47,6 +53,17 @@ public class IDE extends JFrame {
 		tokens = new Tokens();
 	}
 
+        private void btnBitacoraActionPerformed(java.awt.event.ActionEvent evt) {
+
+    if (lexico == null || sintactico == null) {
+        areaConsola.append("\nPrimero debes compilar el código.");
+        return;
+    }
+
+    ArchivoHtmlBitacora.generar(lexico.errores, sintactico.errores);
+
+}
+        
 	private void initComponents() {
 
 		getContentPane().setLayout(new BorderLayout());
@@ -121,9 +138,10 @@ public class IDE extends JFrame {
 		btnIdentifiers.addActionListener(e -> mostrarIdentificadores());
 		btnHtmlTokens.addActionListener(e -> htmlTokens());
 		btnHtml.addActionListener(e -> html());
-
+                btnBitacora.addActionListener(e -> btnBitacoraActionPerformed(null));
+                
 		JButton[] botones = { btnNuevo, btnGuardar, btnAbrir, btnReserved, btnIdentifiers, btnAnalizarTokens,
-				btnCompilar, btnHtmlTokens, btnHtml };
+                btnCompilar, btnHtmlTokens, btnHtml, btnBitacora };
 
 		for (JButton b : botones) {
 			b.setFocusPainted(false);
@@ -145,6 +163,7 @@ public class IDE extends JFrame {
 		toolBar.addSeparator();
 		toolBar.add(btnHtmlTokens);
 		toolBar.add(btnHtml);
+                toolBar.add(btnBitacora);
 
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 	}
@@ -264,6 +283,15 @@ public class IDE extends JFrame {
 
 		limpiarResaltado();
 		areaConsola.setText("Iniciando compilación...\n\n");
+                
+                String codigo = areaCodigo.getText();
+
+                lexico = new AnalizadorLexico();
+                lexico.analizar(codigo);
+
+                sintactico = new AnalizadorSintactico();
+                sintactico.analizar(codigo);
+                
 
 		String[] lineas = areaCodigo.getText().split("\n");
 
@@ -299,6 +327,8 @@ public class IDE extends JFrame {
 				subrayarTexto(numLinea, linea);
 
 				areaConsola.append("\nCompilación fallida");
+                                
+                                areaConsola.append("\nBitácora generada en el escritorio.");
 				return;
 			}
 		}
